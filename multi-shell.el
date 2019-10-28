@@ -49,8 +49,8 @@
   :group 'multi-shell)
 
 
-(defvar multi-shell--current-shell-index 0
-  "Record the shell index.")
+(defvar multi-shell--current-shell-id 0
+  "Record the shell id.")
 
 (defvar multi-shell--live-shells '()
   "Record of list of shell that are still alive.")
@@ -71,23 +71,15 @@
   "Form the shell name by BASE and ID."
   (format "*%s: <%s>*" base id))
 
-;;;###autoload
-(defun multi-shell-dedicated-open ()
-  "Open dedicated shell window."
-  (interactive)
-  )
-
-;;;###autoload
-(defun multi-shell-dedicated-close ()
-  "Close dedicated shell window."
-  (interactive)
-  )
-
-;;;###autoload
-(defun multi-shell-dedicated-toggle ()
-  "Toggle dedicated shell window."
-  (interactive)
-  )
+(defun multi-shell-opened-p ()
+  "Check if at least one shell opened."
+  (let ((index 0) (shell-list (multi-shell-select-list)) (break nil) (opened nil))
+    (while (and (< index (length multi-shell--live-shells)) (not break))
+      (when (get-process (nth index shell-list))
+        (setq opened t)
+        (setq break t))
+      (setq index (1+ index)))
+    opened))
 
 (defun multi-shell--cycle-delta-live-shell-list (st val)
   "Cycle through the live shell list the delta VAL and ST."
@@ -101,7 +93,7 @@
 
 (defun multi-shell--get-current-shell-index-by-id (&optional id)
   "Return the current shell index by ID."
-  (unless id (setq id multi-shell--current-shell-index))
+  (unless id (setq id multi-shell--current-shell-id))
   (let ((index 0) (break nil) (sp nil) (fn-index -1))
     (while (and (< index (length multi-shell--live-shells))
                 (not break))
@@ -112,14 +104,37 @@
       (setq index (1+ index)))
     fn-index))
 
+(defun multi-shell-select-list ()
+  "Return the list of shell select."
+  (let ((fn-lst '()))
+    (dolist (sp multi-shell--live-shells)
+      (push (multi-shell--form-name-by-id multi-shell-prefer-shell-type (car sp)) fn-lst))
+    fn-lst))
+
+(defun multi-shell--name-to-id (sp-name)
+  "Turn SP-NAME to id."
+  (let ((start (+ 4 (length (symbol-name multi-shell-prefer-shell-type)))))
+    (string-to-number (substring sp-name start (length sp-name)))))
+
+(defun multi-shell--correct-buffer-name (killed-id)
+  "Correct the buffer name by moving the id above the KILLED-ID."
+  (setq multi-shell--live-shells (reverse multi-shell--live-shells))
+  (dolist (sp multi-shell--live-shells)
+    (with-current-buffer (cdr sp)
+      (let ((shell-id (multi-shell--name-to-id (buffer-name))))
+        (when (>= shell-id killed-id)
+          (rename-buffer
+           (multi-shell--form-name-by-id multi-shell-prefer-shell-type
+                                         (1- shell-id)))))))
+  (setq multi-shell--live-shells (reverse multi-shell--live-shells)))
+
 ;;;###autoload
 (defun multi-shell-prev ()
   "Switch to previous shell buffer."
   (interactive)
   (let* ((cur-index (multi-shell--get-current-shell-index-by-id))
          (sp (multi-shell--cycle-delta-live-shell-list cur-index -1)))
-    (setq multi-shell--current-shell-index (car sp))
-    (multi-shell-switch sp)))
+    (multi-shell-select (multi-shell--form-name sp))))
 
 ;;;###autoload
 (defun multi-shell-next ()
@@ -127,29 +142,29 @@
   (interactive)
   (let* ((cur-index (multi-shell--get-current-shell-index-by-id))
          (sp (multi-shell--cycle-delta-live-shell-list cur-index 1)))
-    (setq multi-shell--current-shell-index (car sp))
-    (multi-shell-switch sp)))
+    (multi-shell-select (multi-shell--form-name sp))))
 
 ;;;###autoload
-(defun multi-shell-switch (sp)
-  "Switch to shell buffer by SP."
+(defun multi-shell-select (sp-name)
+  "Switch to shell buffer by SP-NAME."
   (interactive
-   (list
-    (completing-read
-     "Select shell process: "
-     multi-shell--live-shells)))
-  (switch-to-buffer (cdr sp)))
+   (list (completing-read "Select shell process: " (multi-shell-select-list))))
+  (setq multi-shell--current-shell-id (multi-shell--name-to-id sp-name))
+  (switch-to-buffer sp-name))
 
 ;;;###autoload
 (defun multi-shell-kill (&optional sp)
   "Kill the current shell buffer SP."
   (interactive)
-  (unless sp (setq sp (nth multi-shell--current-shell-index multi-shell--live-shells)))
+  (unless sp
+    (setq multi-shell--current-shell-id (multi-shell--name-to-id (buffer-name)))
+    (setq sp (nth (multi-shell--get-current-shell-index-by-id) multi-shell--live-shells)))
   (when sp
     (with-current-buffer (cdr sp) (erase-buffer))
     (kill-process (cdr sp))
     (kill-buffer (multi-shell--form-name-by-id multi-shell-prefer-shell-type (car sp)))
-    (setq multi-shell--live-shells (remove sp multi-shell--live-shells))))
+    (setq multi-shell--live-shells (remove sp multi-shell--live-shells))
+    (multi-shell--correct-buffer-name multi-shell--current-shell-id)))
 
 ;;;###autoload
 (defun multi-shell ()
@@ -161,10 +176,8 @@
     (unless (get-buffer sh-name) (multi-shell--run-shell-procss-by-type))
     (with-current-buffer sh-name
       (rename-buffer name)
-      (when truncate-lines (toggle-truncate-lines))
-
-      (push (cons id (current-buffer)) multi-shell--live-shells))
-    (message "Start terminal <%s> at '%s'" id default-directory)))
+      (when truncate-lines (toggle-truncate-lines) (message ""))
+      (push (cons id (current-buffer)) multi-shell--live-shells))))
 
 
 (provide 'multi-shell)
