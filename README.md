@@ -3,7 +3,7 @@
 
 
 # multi-shell
-> Managing multiple shell buffers in Emacs.
+> Managing multiple shell buffers.
 
 
 ## Contribution

@@ -1,10 +1,10 @@
-;;; multi-shell.el --- Managing multiple shell buffers in Emacs.  -*- lexical-binding: t; -*-
+;;; multi-shell.el --- Managing multiple shell buffers.  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2019  Shen, Jen-Chieh
 ;; Created date 2019-10-28 16:46:14
 
 ;; Author: Shen, Jen-Chieh <jcs090218@gmail.com>
-;; Description: Managing multiple shell buffers in Emacs.
+;; Description: Managing multiple shell buffers.
 ;; Keyword: multiple shell terminal
 ;; Version: 0.0.1
 ;; Package-Requires: ((emacs "24.3"))
@@ -27,7 +27,7 @@
 
 ;;; Commentary:
 ;;
-;; Managing multiple shell buffers in Emacs.
+;; Managing multiple shell buffers.
 ;;
 
 ;;; Code:
@@ -99,7 +99,7 @@
       (setq target-index (% target-index (length multi-shell--live-shells)))))
     target-index))
 
-(defun multi-shell--get-current-shell-index-by-id (id)
+(defun multi-shell--get-current-shell-index-by-id (&optional id)
   "Return the current shell index by ID."
   (unless id (setq id multi-shell--current-shell-index))
   (let ((index 0) (break nil) (sp nil) (fn-index -1))
@@ -107,7 +107,7 @@
                 (not break))
       (setq sp (nth index multi-shell--live-shells))
       (when (= (car sp) id)
-        (setq fn-index inde)
+        (setq fn-index index)
         (setq break t))
       (setq index (1+ index)))
     fn-index))
