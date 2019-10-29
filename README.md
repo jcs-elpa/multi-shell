@@ -6,6 +6,16 @@
 > Managing multiple shell buffers.
 
 
+## Usage
+
+* `multi-shell` - Create a new shell buffer.
+* `multi-shell-select` - Switch to shell buffer.
+* `multi-shell-next` - Switch to next shell buffer.
+* `multi-shell-prev` - Switch to previous shell buffer.
+* `multi-shell-kill` - Kill the current shell buffer.
+* `multi-shell-kill-all` - Kill the all shell buffers.
+
+
 ## Contribution
 
 If you would like to contribute to this project, you may either
