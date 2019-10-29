@@ -42,6 +42,7 @@
   :group 'tool
   :link '(url-link :tag "Repository" "https://github.com/jcs090218/multi-shell"))
 
+
 (defcustom multi-shell-prefer-shell-type 'shell
   "Prefer shell type."
   :type '(choice (const :tag "shell" shell)
