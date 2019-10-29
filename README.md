@@ -5,6 +5,15 @@
 # multi-shell
 > Managing multiple shell buffers.
 
+Simple and completely compatible to Emacs' built-in `shell` implementation.
+This also works with `eshell`.
+
+
+## Differences from other alternatives
+
+* [mutli-term](https://www.emacswiki.org/emacs/MultiTerm)
+  - Doesn't work in Windows.
+
 
 ## Usage
 
@@ -16,6 +25,25 @@
 * `multi-shell-prev` - Switch to previous shell buffer.
 * `multi-shell-kill` - Kill the current shell buffer.
 * `multi-shell-kill-all` - Kill the all shell buffers.
+
+## Customization
+
+Add these two lines in your configuration file if you do use any package
+management tool. (Like, [use-package](https://github.com/jwiegley/use-package))
+
+```el
+(require 'multi-shell)
+(setq multi-shell-prefer-shell-type 'shell)  ; Also accept `eshell`.
+```
+
+If you are using [use-package](https://github.com/jwiegley/use-package)
+for package management.
+
+```el
+(use-package multi-shell
+  :init
+  (setq multi-shell-prefer-shell-type 'shell))  ; Also accept `eshell`.
+```
 
 
 ## Contribution
