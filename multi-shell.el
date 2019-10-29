@@ -153,6 +153,13 @@
   (switch-to-buffer sp-name))
 
 ;;;###autoload
+(defun multi-shell-kill-all ()
+  "Kill the all shell buffer."
+  (interactive)
+  (while (not (= 0 (length multi-shell--live-shells)))
+    (multi-shell-kill (nth 0 multi-shell--live-shells))))
+
+;;;###autoload
 (defun multi-shell-kill (&optional sp)
   "Kill the current shell buffer SP."
   (interactive)
@@ -162,7 +169,7 @@
   (when sp
     (with-current-buffer (cdr sp) (erase-buffer))
     (kill-process (cdr sp))
-    (kill-buffer (multi-shell--form-name-by-id multi-shell-prefer-shell-type (car sp)))
+    (kill-buffer (cdr sp))
     (setq multi-shell--live-shells (remove sp multi-shell--live-shells))
     (multi-shell--correct-buffer-name multi-shell--current-shell-id)))
 
