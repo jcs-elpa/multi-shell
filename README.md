@@ -8,6 +8,8 @@
 
 ## Usage
 
+`multi-shell` provides the following interactive functions
+
 * `multi-shell` - Create a new shell buffer.
 * `multi-shell-select` - Switch to shell buffer.
 * `multi-shell-next` - Switch to next shell buffer.
