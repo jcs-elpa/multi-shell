@@ -62,14 +62,18 @@
     ('shell (shell))
     ('eshell (eshell))))
 
-
 (defun multi-shell--form-name (base)
   "Form the shell name by BASE."
   (format "*%s*" base))
 
-(defun multi-shell--form-name-by-id (base id)
+(defun multi-shell--form-name-by-id (id &optional base)
   "Form the shell name by BASE and ID."
+  (unless base (setq base multi-shell-prefer-shell-type))
   (format "*%s: <%s>*" base id))
+
+(defun multi-shell--prefix-name ()
+  "Return shell name's prefix."
+  (format "*%s: <" multi-shell-prefer-shell-type))
 
 (defun multi-shell-opened-p ()
   "Check if at least one shell opened."
@@ -93,7 +97,9 @@
 
 (defun multi-shell--get-current-shell-index-by-id (&optional id)
   "Return the current shell index by ID."
-  (unless id (setq id multi-shell--current-shell-id))
+  (unless id
+    (setq multi-shell--current-shell-id (multi-shell--name-to-id (buffer-name)))
+    (setq id multi-shell--current-shell-id))
   (let ((index 0) (break nil) (sp nil) (fn-index -1))
     (while (and (< index (length multi-shell--live-shells))
                 (not break))
@@ -108,12 +114,12 @@
   "Return the list of shell select."
   (let ((fn-lst '()))
     (dolist (sp multi-shell--live-shells)
-      (push (multi-shell--form-name-by-id multi-shell-prefer-shell-type (car sp)) fn-lst))
+      (push (multi-shell--form-name-by-id (car sp)) fn-lst))
     fn-lst))
 
 (defun multi-shell--name-to-id (sp-name)
   "Turn SP-NAME to id."
-  (let ((start (+ 4 (length (symbol-name multi-shell-prefer-shell-type)))))
+  (let ((start (length (multi-shell--prefix-name))))
     (string-to-number (substring sp-name start (length sp-name)))))
 
 (defun multi-shell--correct-buffer-name (killed-id)
@@ -124,25 +130,31 @@
       (let ((shell-id (multi-shell--name-to-id (buffer-name))))
         (when (>= shell-id killed-id)
           (rename-buffer
-           (multi-shell--form-name-by-id multi-shell-prefer-shell-type
-                                         (1- shell-id)))))))
+           (multi-shell--form-name-by-id (1- shell-id)))))))
   (setq multi-shell--live-shells (reverse multi-shell--live-shells)))
+
+;;;###autoload
+(defun multi-shell-live-p ()
+  "Check if any shell is alive."
+  (not (= (length multi-shell--live-shells) 0)))
 
 ;;;###autoload
 (defun multi-shell-prev ()
   "Switch to previous shell buffer."
   (interactive)
   (let* ((cur-index (multi-shell--get-current-shell-index-by-id))
-         (sp (multi-shell--cycle-delta-live-shell-list cur-index -1)))
-    (multi-shell-select (multi-shell--form-name sp))))
+         (sp-index (multi-shell--cycle-delta-live-shell-list cur-index 1))
+         (sp (nth sp-index multi-shell--live-shells)))
+    (multi-shell-select (multi-shell--form-name-by-id (car sp)))))
 
 ;;;###autoload
 (defun multi-shell-next ()
   "Switch to next shell buffer."
   (interactive)
   (let* ((cur-index (multi-shell--get-current-shell-index-by-id))
-         (sp (multi-shell--cycle-delta-live-shell-list cur-index 1)))
-    (multi-shell-select (multi-shell--form-name sp))))
+         (sp-index (multi-shell--cycle-delta-live-shell-list cur-index -1))
+         (sp (nth sp-index multi-shell--live-shells)))
+    (multi-shell-select (multi-shell--form-name-by-id (car sp)))))
 
 ;;;###autoload
 (defun multi-shell-select (sp-name)
@@ -150,7 +162,8 @@
   (interactive
    (list (completing-read "Select shell process: " (multi-shell-select-list))))
   (setq multi-shell--current-shell-id (multi-shell--name-to-id sp-name))
-  (switch-to-buffer sp-name))
+  (switch-to-buffer sp-name)
+  sp-name)
 
 ;;;###autoload
 (defun multi-shell-kill-all ()
@@ -164,7 +177,6 @@
   "Kill the current shell buffer SP."
   (interactive)
   (unless sp
-    (setq multi-shell--current-shell-id (multi-shell--name-to-id (buffer-name)))
     (setq sp (nth (multi-shell--get-current-shell-index-by-id) multi-shell--live-shells)))
   (when sp
     (with-current-buffer (cdr sp) (erase-buffer))
@@ -178,7 +190,7 @@
   "Create a new shell buffer."
   (interactive)
   (let* ((id (length multi-shell--live-shells))
-         (name (multi-shell--form-name-by-id multi-shell-prefer-shell-type id))
+         (name (multi-shell--form-name-by-id id))
          (sh-name (multi-shell--form-name multi-shell-prefer-shell-type)))
     (unless (get-buffer sh-name) (multi-shell--run-shell-procss-by-type))
     (with-current-buffer sh-name
