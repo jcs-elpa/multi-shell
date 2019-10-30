@@ -24,7 +24,7 @@ This also works with `eshell`.
 * `multi-shell-next` - Switch to next shell buffer.
 * `multi-shell-prev` - Switch to previous shell buffer.
 * `multi-shell-kill` - Kill the current shell buffer.
-* `multi-shell-kill-all` - Kill the all shell buffers.
+* `multi-shell-kill-all` - Kill all shell buffers.
 
 ## Customization
 
