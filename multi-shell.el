@@ -168,7 +168,7 @@
 
 ;;;###autoload
 (defun multi-shell-kill-all ()
-  "Kill the all shell buffers."
+  "Kill all shell buffers."
   (interactive)
   (while (not (= 0 (length multi-shell--live-shells)))
     (multi-shell-kill (nth 0 multi-shell--live-shells))))
