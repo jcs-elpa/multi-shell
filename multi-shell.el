@@ -128,10 +128,15 @@
   (setq multi-shell--live-shells (reverse multi-shell--live-shells))
   (dolist (sp multi-shell--live-shells)
     (with-current-buffer (cdr sp)
-      (let ((shell-id (multi-shell--name-to-id (buffer-name))))
+      (let* ((shell-id (multi-shell--name-to-id (buffer-name)))
+             (new-shell-id (1- shell-id)))
         (when (>= shell-id killed-id)
-          (rename-buffer
-           (multi-shell--form-name-by-id (1- shell-id)))))))
+          (rename-buffer (multi-shell--form-name-by-id new-shell-id))))))
+  (let ((index 0))
+    (dolist (sp multi-shell--live-shells)
+      (let ((new-id (multi-shell--name-to-id (with-current-buffer (cdr sp) (buffer-name)))))
+        (setf (nth index multi-shell--live-shells) (cons new-id (cdr sp))))
+      (setq index (1+ index))))
   (setq multi-shell--live-shells (reverse multi-shell--live-shells)))
 
 ;;;###autoload
