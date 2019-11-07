@@ -76,16 +76,6 @@
   "Return shell name's prefix."
   (format "*%s: <" multi-shell-prefer-shell-type))
 
-(defun multi-shell-opened-p ()
-  "Check if at least one shell opened."
-  (let ((index 0) (shell-list (multi-shell-select-list)) (break nil) (opened nil))
-    (while (and (< index (length multi-shell--live-shells)) (not break))
-      (when (get-process (nth index shell-list))
-        (setq opened t)
-        (setq break t))
-      (setq index (1+ index)))
-    opened))
-
 (defun multi-shell--cycle-delta-live-shell-list (st val)
   "Cycle through the live shell list the delta VAL and ST."
   (let ((target-index (+ st val)))
