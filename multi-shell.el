@@ -1,4 +1,4 @@
-;;; multi-shell.el --- Managing multiple shell buffers.  -*- lexical-binding: t; -*-
+;;; multi-shell.el --- Managing multiple shell buffers  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2019  Shen, Jen-Chieh
 ;; Created date 2019-10-28 16:46:14
@@ -7,7 +7,7 @@
 ;; Description: Managing multiple shell buffers.
 ;; Keyword: multiple shell terminal
 ;; Version: 0.0.1
-;; Package-Requires: ((emacs "24.3"))
+;; Package-Requires: ((emacs "24.4"))
 ;; URL: https://github.com/jcs090218/multi-shell
 
 ;; This file is NOT part of GNU Emacs.
@@ -55,6 +55,9 @@
 
 (defvar multi-shell--live-shells '()
   "Record of list of shell that are still alive.")
+
+(defvar multi-shell--prevent-nested-kill nil
+  "Flag to prevent nested kill buffer command.")
 
 
 (defun multi-shell--run-shell-procss-by-type ()
@@ -175,9 +178,9 @@
   (unless sp
     (setq sp (nth (multi-shell--get-current-shell-index-by-id) multi-shell--live-shells)))
   (when sp
-    (with-current-buffer (cdr sp) (erase-buffer))
-    (kill-process (cdr sp))
-    (kill-buffer (cdr sp))
+    (when (buffer-name (cdr sp))
+      (with-current-buffer (cdr sp) (erase-buffer))
+      (kill-buffer (cdr sp)))
     (setq multi-shell--live-shells (remove sp multi-shell--live-shells))
     (multi-shell--correct-buffer-name multi-shell--current-shell-id)))
 
@@ -193,6 +196,16 @@
       (rename-buffer name)
       (when truncate-lines (toggle-truncate-lines) (message ""))
       (push (cons id (current-buffer)) multi-shell--live-shells))))
+
+
+(defun multi-shell--kill-buffer (fnc &rest args)
+  "Advice execute around `kill-buffer' function with FNC and ARGS."
+  (if (and (string-match-p (multi-shell--prefix-name) (buffer-name))
+           (not multi-shell--prevent-nested-kill))
+      (let ((multi-shell--prevent-nested-kill t))
+        (multi-shell-kill))
+    (apply fnc args)))
+(advice-add 'kill-buffer :around #'multi-shell--kill-buffer)
 
 
 (provide 'multi-shell)
