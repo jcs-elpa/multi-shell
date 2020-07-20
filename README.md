@@ -1,6 +1,5 @@
-[![Build Status](https://travis-ci.com/jcs090218/multi-shell.svg?branch=master)](https://travis-ci.com/jcs090218/multi-shell)
+[![Build Status](https://travis-ci.com/jcs-elpa/multi-shell.svg?branch=master)](https://travis-ci.com/jcs-elpa/multi-shell)
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-
 
 # multi-shell
 > Managing multiple shell buffers.
@@ -8,12 +7,10 @@
 Simple and completely compatible to Emacs' built-in `shell` implementation.
 This also works with `eshell`.
 
-
 ## Differences from other alternatives
 
 * [mutli-term](https://www.emacswiki.org/emacs/MultiTerm)
   - Doesn't work in Windows.
-
 
 ## Usage
 
@@ -44,7 +41,6 @@ for package management.
   :init
   (setq multi-shell-prefer-shell-type 'shell))  ; Also accept `eshell`.
 ```
-
 
 ## Contribution
 
