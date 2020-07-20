@@ -8,7 +8,7 @@
 ;; Keyword: multiple shell terminal
 ;; Version: 0.0.3
 ;; Package-Requires: ((emacs "24.4"))
-;; URL: https://github.com/jcs090218/multi-shell
+;; URL: https://github.com/jcs-elpa/multi-shell
 
 ;; This file is NOT part of GNU Emacs.
 
@@ -35,20 +35,17 @@
 (require 'shell)
 (require 'eshell)
 
-
 (defgroup multi-shell nil
   "Managing multiple shell buffers in Emacs."
   :prefix "multi-shell-"
   :group 'tool
-  :link '(url-link :tag "Repository" "https://github.com/jcs090218/multi-shell"))
-
+  :link '(url-link :tag "Repository" "https://github.com/jcs-elpa/multi-shell"))
 
 (defcustom multi-shell-prefer-shell-type 'shell
   "Prefer shell type."
   :type '(choice (const :tag "shell" shell)
                  (const :tag "eshell" eshell))
   :group 'multi-shell)
-
 
 (defvar multi-shell--current-shell-id 0
   "Record the shell id.")
@@ -58,7 +55,6 @@
 
 (defvar multi-shell--prevent-nested-kill nil
   "Flag to prevent nested kill buffer command.")
-
 
 (defun multi-shell--run-shell-procss-by-type ()
   "Run the shell process by current type."
@@ -197,7 +193,6 @@
       (when truncate-lines (toggle-truncate-lines) (message ""))
       (push (cons id (current-buffer)) multi-shell--live-shells))))
 
-
 (defun multi-shell--kill-buffer (fnc &rest args)
   "Advice execute around `kill-buffer' function with FNC and ARGS."
   (if (and (string-match-p (multi-shell--prefix-name) (buffer-name))
@@ -206,7 +201,6 @@
         (multi-shell-kill))
     (apply fnc args)))
 (advice-add 'kill-buffer :around #'multi-shell--kill-buffer)
-
 
 (provide 'multi-shell)
 ;;; multi-shell.el ends here
