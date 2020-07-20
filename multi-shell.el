@@ -6,7 +6,7 @@
 ;; Author: Shen, Jen-Chieh <jcs090218@gmail.com>
 ;; Description: Managing multiple shell buffers.
 ;; Keyword: multiple shell terminal
-;; Version: 0.0.3
+;; Version: 0.0.4
 ;; Package-Requires: ((emacs "24.4"))
 ;; URL: https://github.com/jcs-elpa/multi-shell
 
