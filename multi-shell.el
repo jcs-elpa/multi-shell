@@ -59,8 +59,8 @@
 (defun multi-shell--run-shell-procss-by-type ()
   "Run the shell process by current type."
   (cl-case multi-shell-prefer-shell-type
-    ('shell (shell))
-    ('eshell (eshell))))
+    (shell (shell))
+    (eshell (eshell))))
 
 (defun multi-shell--form-name (base)
   "Form the shell name by BASE."
