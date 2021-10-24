@@ -33,6 +33,7 @@
 ;;; Code:
 
 (require 'cl-lib)
+(require 'comint)
 (require 'shell)
 (require 'eshell)
 
@@ -48,10 +49,15 @@
                  (const :tag "eshell" eshell))
   :group 'multi-shell)
 
+(defcustom multi-shell-display-function #'switch-to-buffer
+  "Function to display shell buffer."
+  :type 'function
+  :group 'multi-shell)
+
 (defvar multi-shell--current-shell-id 0
   "Record the shell id.")
 
-(defvar multi-shell--live-shells '()
+(defvar multi-shell--live-shells nil
   "Record of list of shell that are still alive.")
 
 (defvar multi-shell--prevent-nested-kill nil
@@ -59,9 +65,10 @@
 
 (defun multi-shell--run-shell-procss-by-type ()
   "Run the shell process by current type."
-  (cl-case multi-shell-prefer-shell-type
-    (shell (shell))
-    (eshell (eshell))))
+  (save-window-excursion
+    (cl-case multi-shell-prefer-shell-type
+      (`shell (shell))
+      (`eshell (eshell)))))
 
 (defun multi-shell--form-name (base)
   "Form the shell name by BASE."
@@ -89,21 +96,21 @@
 (defun multi-shell--get-current-shell-index-by-id (&optional id)
   "Return the current shell index by ID."
   (unless id
-    (setq multi-shell--current-shell-id (multi-shell--name-to-id (buffer-name)))
-    (setq id multi-shell--current-shell-id))
+    (setq multi-shell--current-shell-id (multi-shell--name-to-id (buffer-name))
+          id multi-shell--current-shell-id))
   (let ((index 0) (break nil) (sp nil) (fn-index -1))
     (while (and (< index (length multi-shell--live-shells))
                 (not break))
       (setq sp (nth index multi-shell--live-shells))
       (when (= (car sp) id)
-        (setq fn-index index)
-        (setq break t))
+        (setq fn-index index
+              break t))
       (setq index (1+ index)))
     fn-index))
 
 (defun multi-shell-select-list ()
   "Return the list of shell select."
-  (let ((fn-lst '()))
+  (let (fn-lst)
     (dolist (sp multi-shell--live-shells)
       (push (multi-shell--form-name-by-id (car sp)) fn-lst))
     fn-lst))
@@ -176,7 +183,7 @@
     (setq sp (nth (multi-shell--get-current-shell-index-by-id) multi-shell--live-shells)))
   (when sp
     (when (buffer-name (cdr sp))
-      (with-current-buffer (cdr sp) (erase-buffer))
+      (with-current-buffer (cdr sp) (comint-kill-region (point-min) (point-max)))
       (kill-buffer (cdr sp)))
     (setq multi-shell--live-shells (remove sp multi-shell--live-shells))
     (multi-shell--correct-buffer-name multi-shell--current-shell-id)))
@@ -192,7 +199,8 @@
     (with-current-buffer sh-name
       (rename-buffer name)
       (when truncate-lines (toggle-truncate-lines) (message ""))
-      (push (cons id (current-buffer)) multi-shell--live-shells))))
+      (push (cons id (current-buffer)) multi-shell--live-shells))
+    (funcall multi-shell-display-function name)))
 
 (defun multi-shell--kill-buffer (fnc &rest args)
   "Advice execute around `kill-buffer' function with FNC and ARGS."
