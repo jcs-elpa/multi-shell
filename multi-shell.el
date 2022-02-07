@@ -218,20 +218,17 @@
   (defvar shell-pop-last-shell-buffer-index)
   (defvar shell-pop-last-shell-buffer-name)
 
-  (defun multi-shell--shell-pop--shell-buffer-name (index)
-    (if (string-match-p "*\\'" shell-pop-internal-mode-buffer)
-        (format "*%s: <%d>*" multi-shell-prefer-shell-type index)
-      (format "%s%d" shell-pop-internal-mode-buffer index)))
+  (advice-add 'shell-pop--shell-buffer-name :override
+              (lambda (index)
+                (if (string-match-p "*\\'" shell-pop-internal-mode-buffer)
+                    (format "*%s: <%d>*" multi-shell-prefer-shell-type index)
+                  (format "%s%d" shell-pop-internal-mode-buffer index))))
 
-  (advice-add 'shell-pop--shell-buffer-name :override #'multi-shell--shell-pop--shell-buffer-name)
-
-  (defun multi-shell-select--update-buffer (&rest _)
-    "Update shell buffer."
-    (let ((id multi-shell--current-shell-id))
-      (setq shell-pop-last-shell-buffer-index id
-            shell-pop-last-shell-buffer-name (multi-shell--form-name-by-id id))))
-
-  (advice-add 'multi-shell-select :after #'multi-shell-select--update-buffer))
+  (advice-add 'multi-shell-select :after
+              (lambda (&rest _)
+                (let ((id multi-shell--current-shell-id))
+                  (setq shell-pop-last-shell-buffer-index id
+                        shell-pop-last-shell-buffer-name (multi-shell--form-name-by-id id))))))
 
 (provide 'multi-shell)
 ;;; multi-shell.el ends here
