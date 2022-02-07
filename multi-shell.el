@@ -82,6 +82,12 @@
   "Return shell name's prefix."
   (format "*%s: <" multi-shell-prefer-shell-type))
 
+(defun multi-shell--next-valid-index ()
+  "Return next valid index to generate new shell."
+  (let ((index 0))
+    (while (get-buffer (multi-shell--form-name-by-id index)) (cl-incf index))
+    index))
+
 (defun multi-shell--cycle-delta-live-shell-list (st val)
   "Cycle through the live shell list the delta VAL and ST."
   (let ((target-index (+ st val)))
