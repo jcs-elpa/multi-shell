@@ -1,13 +1,13 @@
 ;;; multi-shell.el --- Managing multiple shell buffers  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2019  Shen, Jen-Chieh
+;; Copyright (C) 2019-2022  Shen, Jen-Chieh
 ;; Created date 2019-10-28 16:46:14
 
 ;; Author: Shen, Jen-Chieh <jcs090218@gmail.com>
 ;; Description: Managing multiple shell buffers.
 ;; Keyword: multiple shell terminal
 ;; Version: 0.1.1
-;; Package-Requires: ((emacs "24.4"))
+;; Package-Requires: ((emacs "25.1"))
 ;; URL: https://github.com/jcs-elpa/multi-shell
 
 ;; This file is NOT part of GNU Emacs.
@@ -34,8 +34,7 @@
 
 (require 'cl-lib)
 (require 'comint)
-(require 'shell)
-(require 'eshell)
+(require 'subr-x)
 
 (defgroup multi-shell nil
   "Managing multiple shell buffers in Emacs."
@@ -68,7 +67,8 @@
   (save-window-excursion
     (cl-case multi-shell-prefer-shell-type
       (`shell (shell))
-      (`eshell (eshell)))))
+      (`eshell (eshell))
+      (t (user-error "[ERROR] Invalid shell type: %s" multi-shell-prefer-shell-type)))))
 
 (defun multi-shell--form-name (base)
   "Form the shell name by BASE."
@@ -76,8 +76,7 @@
 
 (defun multi-shell--form-name-by-id (id &optional base)
   "Form the shell name by BASE and ID."
-  (unless base (setq base multi-shell-prefer-shell-type))
-  (format "*%s: <%s>*" base id))
+  (format "*%s: <%s>*" (or base multi-shell-prefer-shell-type) id))
 
 (defun multi-shell--prefix-name ()
   "Return shell name's prefix."
@@ -141,23 +140,24 @@
   "Check if any shell is alive."
   (not (= (length multi-shell--live-shells) 0)))
 
+(defun multi-shell--switch (delta)
+  "Switch to DELTA shell."
+  (let* ((cur-index (multi-shell--get-current-shell-index-by-id))
+         (sp-index (multi-shell--cycle-delta-live-shell-list cur-index (- 0 delta)))
+         (sp (nth sp-index multi-shell--live-shells)))
+    (multi-shell-select (multi-shell--form-name-by-id (car sp)))))
+
 ;;;###autoload
 (defun multi-shell-prev ()
   "Switch to previous shell buffer."
   (interactive)
-  (let* ((cur-index (multi-shell--get-current-shell-index-by-id))
-         (sp-index (multi-shell--cycle-delta-live-shell-list cur-index 1))
-         (sp (nth sp-index multi-shell--live-shells)))
-    (multi-shell-select (multi-shell--form-name-by-id (car sp)))))
+  (multi-shell--switch -1))
 
 ;;;###autoload
 (defun multi-shell-next ()
   "Switch to next shell buffer."
   (interactive)
-  (let* ((cur-index (multi-shell--get-current-shell-index-by-id))
-         (sp-index (multi-shell--cycle-delta-live-shell-list cur-index -1))
-         (sp (nth sp-index multi-shell--live-shells)))
-    (multi-shell-select (multi-shell--form-name-by-id (car sp)))))
+  (multi-shell--switch 1))
 
 ;;;###autoload
 (defun multi-shell-select (sp-name)
@@ -179,9 +179,7 @@
 (defun multi-shell-kill (&optional sp)
   "Kill the current shell buffer SP."
   (interactive)
-  (unless sp
-    (setq sp (nth (multi-shell--get-current-shell-index-by-id) multi-shell--live-shells)))
-  (when sp
+  (when-let ((sp (or sp (nth (multi-shell--get-current-shell-index-by-id) multi-shell--live-shells))))
     (when (buffer-name (cdr sp))
       (with-current-buffer (cdr sp) (comint-kill-region (point-min) (point-max)))
       (kill-buffer (cdr sp)))
@@ -210,6 +208,26 @@
         (multi-shell-kill))
     (apply fnc args)))
 (advice-add 'kill-buffer :around #'multi-shell--kill-buffer)
+
+;;
+;; (@* "Externals" )
+;;
+
+(with-eval-after-load 'shell-pop
+  (defun multi-shell--shell-pop--shell-buffer-name (index)
+    (if (string-match-p "*\\'" shell-pop-internal-mode-buffer)
+        (format "*%s: <%d>*" multi-shell-prefer-shell-type index)
+      (format "%s%d" shell-pop-internal-mode-buffer index)))
+
+  (advice-add 'shell-pop--shell-buffer-name :override #'multi-shell--shell-pop--shell-buffer-name)
+
+  (defun multi-shell-select--update-buffer (&rest _)
+    "Update shell buffer."
+    (let ((id multi-shell--current-shell-id))
+      (setq shell-pop-last-shell-buffer-index id
+            shell-pop-last-shell-buffer-name (multi-shell--form-name-by-id id))))
+
+  (advice-add 'multi-shell-select :after #'multi-shell-select--update-buffer))
 
 (provide 'multi-shell)
 ;;; multi-shell.el ends here
