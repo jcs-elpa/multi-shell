@@ -214,6 +214,10 @@
 ;;
 
 (with-eval-after-load 'shell-pop
+  (defvar shell-pop-internal-mode-buffer)
+  (defvar shell-pop-last-shell-buffer-index)
+  (defvar shell-pop-last-shell-buffer-name)
+
   (defun multi-shell--shell-pop--shell-buffer-name (index)
     (if (string-match-p "*\\'" shell-pop-internal-mode-buffer)
         (format "*%s: <%d>*" multi-shell-prefer-shell-type index)
