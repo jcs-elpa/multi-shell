@@ -4,11 +4,10 @@
 ;; Created date 2019-10-28 16:46:14
 
 ;; Author: Shen, Jen-Chieh <jcs090218@gmail.com>
-;; Description: Managing multiple shell buffers.
-;; Keyword: multiple shell terminal
+;; URL: https://github.com/jcs-elpa/multi-shell
 ;; Version: 0.1.1
 ;; Package-Requires: ((emacs "25.1"))
-;; URL: https://github.com/jcs-elpa/multi-shell
+;; Keywords: multiple shell terminal
 
 ;; This file is NOT part of GNU Emacs.
 

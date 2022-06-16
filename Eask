@@ -2,6 +2,9 @@
          "0.1.1"
          "Managing multiple shell buffers")
 
+(website-url "https://github.com/jcs-elpa/multi-shell")
+(keywords "multiple" "shell" "terminal")
+
 (package-file "multi-shell.el")
 
 (source "melpa")
