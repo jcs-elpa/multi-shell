@@ -7,7 +7,7 @@
 ;; URL: https://github.com/jcs-elpa/multi-shell
 ;; Version: 0.1.1
 ;; Package-Requires: ((emacs "25.1"))
-;; Keywords: multiple shell terminal
+;; Keywords: convenience multiple shell terminal
 
 ;; This file is NOT part of GNU Emacs.
 
