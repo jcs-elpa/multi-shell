@@ -1,6 +1,6 @@
 ;;; multi-shell.el --- Managing multiple shell buffers  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2019-2022  Shen, Jen-Chieh
+;; Copyright (C) 2019-2024  Shen, Jen-Chieh
 ;; Created date 2019-10-28 16:46:14
 
 ;; Author: Shen, Jen-Chieh <jcs090218@gmail.com>
