@@ -201,7 +201,7 @@
     (unless (get-buffer sh-name) (multi-shell--run-shell-procss-by-type))
     (with-current-buffer sh-name
       (rename-buffer name)
-      (when truncate-lines (toggle-truncate-lines) (message ""))
+      (setq-local truncate-lines nil)
       (push (cons id (current-buffer)) multi-shell--live-shells))
     (funcall multi-shell-display-function name)))
 
