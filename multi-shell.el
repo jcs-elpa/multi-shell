@@ -61,16 +61,14 @@
 (defvar multi-shell--prevent-nested-kill nil
   "Flag to prevent nested kill buffer command.")
 
-(defun multi-shell--run-shell-procss-by-type ()
+;;;###autoload
+(defun multi-shell-run-shell-procss-by-type ()
   "Run the shell process by current type."
   (save-window-excursion
     (cl-case multi-shell-prefer-shell-type
       (`shell (shell))
       (`eshell (eshell))
       (t (user-error "[ERROR] Invalid shell type: %s" multi-shell-prefer-shell-type)))))
-
-;; XXX: There is a bug when starting `shell' the first time.
-(multi-shell--run-shell-procss-by-type)
 
 (defun multi-shell--form-name (base)
   "Form the shell name by BASE."
@@ -201,7 +199,7 @@
   (let* ((id (length multi-shell--live-shells))
          (name (multi-shell--form-name-by-id id))
          (sh-name (multi-shell--form-name multi-shell-prefer-shell-type)))
-    (unless (get-buffer sh-name) (multi-shell--run-shell-procss-by-type))
+    (unless (get-buffer sh-name) (multi-shell-run-shell-procss-by-type))
     (with-current-buffer sh-name
       (rename-buffer name)
       (setq-local truncate-lines nil)
