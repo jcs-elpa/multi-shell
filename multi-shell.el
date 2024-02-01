@@ -69,6 +69,9 @@
       (`eshell (eshell))
       (t (user-error "[ERROR] Invalid shell type: %s" multi-shell-prefer-shell-type)))))
 
+;; XXX: There is a bug when starting `shell' the first time.
+(multi-shell--run-shell-procss-by-type)
+
 (defun multi-shell--form-name (base)
   "Form the shell name by BASE."
   (format "*%s*" base))
@@ -203,7 +206,7 @@
       (rename-buffer name)
       (setq-local truncate-lines nil)
       (push (cons id (current-buffer)) multi-shell--live-shells))
-    (funcall multi-shell-display-function name)))
+    (ignore-errors (funcall multi-shell-display-function name))))
 
 (defun multi-shell--kill-buffer (fnc &rest args)
   "Advice execute around `kill-buffer' function with FNC and ARGS."
