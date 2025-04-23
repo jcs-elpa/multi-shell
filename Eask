@@ -1,3 +1,5 @@
+;; -*- mode: eask; lexical-binding: t -*-
+
 (package "multi-shell"
          "0.1.1"
          "Managing multiple shell buffers")
